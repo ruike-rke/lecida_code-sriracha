@@ -1,0 +1,18 @@
+-c requirements.txt
+mypy
+pytest
+pytest-mock
+freezegun
+pytest-cov
+pytest-flake8
+pycodestyle
+pydocstyle
+isort
+pep8-naming
+flake8-bugbear
+flake8-builtins
+flake8-comprehensions
+flake8-bandit
+flake8-copyright
+flake8-debugger
+pytest-datadir

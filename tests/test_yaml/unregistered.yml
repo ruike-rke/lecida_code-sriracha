@@ -1,0 +1,11 @@
+valid_dict:
+  a: b
+  c: d
+  3: 544
+
+dict_with_invalid_tag:
+  ok: 1
+  invalid_tag: !BaseClass
+    arg1: 0
+    arg2: 1
+    arg3: 2

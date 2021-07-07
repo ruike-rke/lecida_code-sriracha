@@ -1,0 +1,12 @@
+valid_dict:
+  a: b
+  c: d
+  3: 544
+
+dict_with_invalid_tag:
+  ok: 1
+  valid: !MyTag
+  alsoValid: !FooClass
+    arg1: 2
+    arg2: 5
+    kwarg1: nan

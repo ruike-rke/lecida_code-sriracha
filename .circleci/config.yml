@@ -1,0 +1,70 @@
+version: 2
+jobs:
+  test-sriracha:
+    docker:
+      - image: circleci/python:3.7
+    working_directory: ~/repo
+    steps:
+      - checkout:
+          path: ~/repo
+      - restore_cache:
+          keys:
+            # when lock file changes, use increasingly general patterns to restore cache
+            - v3-virtualenv-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "dev-requirements.txt" }}
+            - v3-virtualenv-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - v3-virtualenv-{{ .Branch }}
+            - v3-virtualenv
+      - run:
+          name: Create a virtual environment if necessary
+          command: python -m venv ~/env
+      - run:
+          name: Activate the virtual environment
+          command: |
+            echo 'export VIRTUAL_ENV=$HOME/env' >> $BASH_ENV
+            echo 'export PATH=$HOME/env/bin:$PATH' >> $BASH_ENV
+      - run:
+          name: Install pip-tools if necessary
+          command: pip install pip-tools
+      - run:
+          name: Sync packages
+          command: pip-sync dev-requirements.txt requirements.txt
+      - save_cache:
+          paths:
+            - ~/env
+          key: v3-virtualenv-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "dev-requirements.txt" }}
+      - run:
+          name: Install sriracha
+          command: pip install -e .
+      - run:
+          name: Unit tests
+          command: pytest --cov=sriracha --cov-report=html:test-reports/coverage --junitxml=test-reports/unittests/junit.xml
+      - run:
+          name: Code tests
+          command: pytest --flake8 -m flake8 --junitxml=test-reports/codetests/junit.xml
+          when: always
+      - run:
+          name: Import tests
+          command: |
+            isort --diff
+            isort --check-only -q
+          when: always
+      - run:
+          name: Documentation tests
+          command: pydocstyle sriracha
+          when: always
+      - run:
+          name: Typing tests
+          command: |
+            mkdir -p test-reports/typingtests
+            mypy --junit-xml test-reports/typingtests/junit.xml . tests
+          when: always
+      - store_test_results:
+          path: test-reports
+      - store_artifacts:
+          path: test-reports
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - test-sriracha
